@@ -11,25 +11,28 @@ jobs:
       - name: 'Checkout GitHub Action'
         uses: actions/checkout@v3
 
-      # Login bij Azure via service principal
+      # Login bij Azure via Service Principal
       - name: 'Login via Azure CLI'
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Inloggen op Azure Container Registry (ACR)
-      - name: 'Build and push image'
+      # Login op Azure Container Registry
+      - name: 'ACR Login'
         uses: azure/docker-login@v1
         with:
           login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      # Docker build en push uitvoeren
-      - name: 'Docker build and push'
+      # Docker buildx build en push
+      - name: 'Docker buildx build and push'
         run: |
-          docker build . -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ secrets.REPOSITORY_NAME }}:${{ github.run_number }}
-          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ secrets.REPOSITORY_NAME }}:${{ github.run_number }}
+          docker buildx create --use
+          docker buildx build . \
+            --platform linux/amd64 \
+            -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ secrets.REPOSITORY_NAME }}:${{ github.run_number }} \
+            --push
 
       # Deploy naar Azure Container Instances
       - name: 'Deploy to Azure Container Instances'
@@ -44,5 +47,6 @@ jobs:
           name: getting-started-github
           location: 'westeurope'
           ports: '3000'
+
 
 
