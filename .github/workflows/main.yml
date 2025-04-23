@@ -17,7 +17,7 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Login op Azure Container Registry
+      # Login op Azure Container Registry (ACR)
       - name: 'ACR Login'
         uses: azure/docker-login@v1
         with:
@@ -25,14 +25,11 @@ jobs:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      # Docker buildx build en push
-      - name: 'Docker buildx build and push'
+      # Docker build en push image naar ACR
+      - name: 'Docker build and push'
         run: |
-          docker buildx create --use
-          docker buildx build . \
-            --platform linux/amd64 \
-            -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ secrets.REPOSITORY_NAME }}:${{ github.run_number }} \
-            --push
+          docker build . -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ secrets.REPOSITORY_NAME }}:${{ github.run_number }}
+          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ secrets.REPOSITORY_NAME }}:${{ github.run_number }}
 
       # Deploy naar Azure Container Instances
       - name: 'Deploy to Azure Container Instances'
