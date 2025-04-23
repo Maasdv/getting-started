@@ -17,7 +17,7 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       # Login to Azure Container Registry (ACR)
-      - name: Build and push image
+      - name: Login to ACR
         uses: azure/docker-login@v1
         with:
           login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
@@ -27,11 +27,8 @@ jobs:
       # Build & Push image to ACR
       - name: Docker build and push
         run: |
-       - run: |
           docker buildx build . -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ secrets.REPOSITORY_NAME }}:${{ github.run_number }} --load
           docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ secrets.REPOSITORY_NAME }}:${{ github.run_number }}
-
-          
 
       # Deploy to Azure Container Instances
       - name: Deploy to Azure Container Instances
